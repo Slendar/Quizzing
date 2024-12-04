@@ -14,10 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   question: 'What is the result of this code:
 
-    
 
-    int money = 2000000000;
-    // $2 billion
+    int money = 2000000000; // $2
+    billion
 
     money += 1000000000; // Adding $1 billion'
   answers:
