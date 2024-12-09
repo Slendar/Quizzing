@@ -2,10 +2,14 @@ using UnityEngine;
 using TMPro;
 using System;
 using System.Collections.Generic;
+using System.Collections;
 
 public class Quiz : MonoBehaviour
 {
     public static event EventHandler<EventArgs> OnAnswerSelectedCall;
+    public event EventHandler<EventArgs> OnCorrectAnswerSelected;
+    public event EventHandler<EventArgs> OnQuestionDisplay;
+    public event EventHandler<EventArgs> OnLastQuestionAnswer;
 
     [Header("Questions")]
     [SerializeField] private TMP_Text questionText;
@@ -18,9 +22,15 @@ public class Quiz : MonoBehaviour
 
     private void Start()
     {
-        DisplayRandomQuestion();
         Timer.OnLoadNextScene += Timer_OnLoadNextScene;
         Timer.OnTimerRunOutWhileAnswering += Timer_OnTimerWhileAnsweringRunOut;
+        StartCoroutine(LateStart());
+    }
+
+    private IEnumerator LateStart()
+    {
+        yield return new WaitForSeconds(0.01f);
+        DisplayRandomQuestion();
     }
 
     private void Timer_OnTimerWhileAnsweringRunOut(object sender, EventArgs e)
@@ -38,7 +48,12 @@ public class Quiz : MonoBehaviour
 
     private void DisplayRandomQuestion()
     {
-        if (questionSOs.Count == 0) return; 
+        if (questionSOs.Count == 0)
+        {
+            OnLastQuestionAnswer?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+        OnQuestionDisplay?.Invoke(this, EventArgs.Empty);
 
         currentQuestionSO = questionSOs[UnityEngine.Random.Range(0, questionSOs.Count)];
 
@@ -64,6 +79,7 @@ public class Quiz : MonoBehaviour
         {
             questionText.text = "Correct!";
             answerButtons[index].GetCorrectAnswerBackground().SetActive(true);
+            OnCorrectAnswerSelected?.Invoke(this, EventArgs.Empty);
         }
         else
         {
@@ -94,5 +110,10 @@ public class Quiz : MonoBehaviour
     {
         Timer.OnLoadNextScene -= Timer_OnLoadNextScene;
         Timer.OnTimerRunOutWhileAnswering -= Timer_OnTimerWhileAnsweringRunOut;
+    }
+
+    public byte GetNumberOfQuestions()
+    {
+        return (byte)questionSOs.Count;
     }
 }
